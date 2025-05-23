@@ -1,0 +1,60 @@
+Description: Polly Workshop
+
+# Permissions for the Lambda functions
+
+Parameters:
+  EnvironmentName:
+    Description: An environment name that is tagged to the resources.
+    Type: String
+    Default: Workshop
+  AllowedRegions:
+    Type: String
+    AllowedPattern: '.+-.+-\d(,.+-.+-\d)*'
+    Description: A comma-separated list of AWS regions
+    ConstraintDescription: must contain a comma-separated list of AWS regions. We assume regions are like us-east-1 (two dashes, digit at the end)
+    Default: us-west-2
+
+Resources:
+  LabLambdaRole:
+    Type: "AWS::IAM::Role"
+    Properties:
+      RoleName: Lab-Lambda-Role
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Sid: ""
+            Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+                - dynamodb.amazonaws.com
+                - apigateway.amazonaws.com
+            Action:
+              - sts:AssumeRole
+
+  LambdaExecutionPolicies:
+    Type: "AWS::IAM::Policy"
+    Properties:
+      PolicyName: LambdaExecutionPolicy
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Action:
+              - polly:SynthesizeSpeech
+              - dynamodb:Query
+              - dynamodb:Scan
+              - dynamodb:PutItem
+              - dynamodb:UpdateItem
+              - logs:CreateLogGroup
+              - logs:CreateLogStream
+              - logs:PutLogEvents
+              - sns:Publish
+              - s3:PutObject
+              - s3:PutObjectAcl
+              - s3:GetBucketLocation
+            Resource:
+              - "*"
+      Roles:
+        - !Ref LabLambdaRole
+
